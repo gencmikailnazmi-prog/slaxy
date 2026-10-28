@@ -1,0 +1,325 @@
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SLAXY</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#080d18;color:#f3f6ff;font-family:Arial,sans-serif}
+button,input,textarea{font:inherit}
+button{cursor:pointer;border:0;border-radius:10px;padding:12px;background:#76a9ff;color:#07101f;font-weight:bold}
+input,textarea{width:100%;padding:12px;margin:7px 0 14px;background:#080e19;color:white;border:1px solid #30415f;border-radius:9px}
+textarea{min-height:90px}
+.hidden{display:none!important}
+#intro{position:fixed;inset:0;z-index:9;background:radial-gradient(circle,#1a315a,#080d18 70%);display:flex;align-items:center;justify-content:center;flex-direction:column;animation:fade 3s forwards}
+.logo{font-size:65px;font-weight:900;letter-spacing:8px;color:#76a9ff;text-shadow:0 0 30px #3478ff;animation:zoom 1.3s}
+.slogan{margin-top:15px;letter-spacing:4px;font-size:12px}
+.loader{margin-top:30px;width:160px;height:3px;background:#263653}
+.loader:after{content:"";display:block;height:100%;background:#76a9ff;animation:load 3s linear}
+@keyframes zoom{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:scale(1)}}
+@keyframes load{to{width:100%}}
+@keyframes fade{0%,95%{opacity:1}100%{opacity:1}}
+#login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.panel{background:#111a2b;border:1px solid #263653;border-radius:17px;padding:22px;margin-bottom:15px}
+.loginbox{width:100%;max-width:400px}
+.brand{text-align:center;font-size:30px;font-weight:900;letter-spacing:5px;color:#76a9ff}
+.muted{color:#a7b4cc;font-size:13px;line-height:1.5}
+h2{font-size:23px}
+h3{margin-top:0}
+.full{width:100%;margin:5px 0}
+.secondary{background:#202d45;color:white;border:1px solid #354766}
+.vipbtn{background:#392f1c;color:#ffe2a1;border:1px solid #66512a}
+.danger{background:#512630;color:white}
+#app{max-width:1000px;margin:auto;padding:15px}
+header{display:flex;justify-content:space-between;align-items:center;gap:10px}
+nav{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:12px 0}
+nav button{background:#111a2b;color:white;border:1px solid #263653;padding:12px 5px;font-size:12px}
+nav button.active{border-color:#76a9ff;background:#172849}
+.tab{display:none}.tab.active{display:block}
+.badge{display:inline-block;font-size:10px;letter-spacing:1px;padding:5px 8px;border-radius:20px;background:#392f1c;color:#ffe2a1}
+.item{padding:14px;background:#0b1321;border:1px solid #263653;border-radius:12px;margin-top:10px;overflow-wrap:anywhere}
+.item img{max-width:100%;max-height:180px;object-fit:contain;margin:5px;border-radius:7px}
+.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.actions button{font-size:12px;padding:9px}
+.locked{text-align:center;padding:25px 12px;background:#0b1321;border:1px solid #66512a;border-radius:12px}
+.lockicon{font-size:35px;color:#f2c66d}
+.note{font-size:11px;color:#a7b4cc;line-height:1.5}
+@media(max-width:600px){#app{padding:10px}.logo{font-size:50px}nav button{font-size:11px}}
+</style>
+</head>
+<body>
+
+<div id="intro">
+ <div class="logo">SLAXY</div>
+ <div class="slogan">HAYALLERİNİ PLANLA</div>
+ <div class="loader"></div>
+</div>
+
+<section id="login" class="hidden">
+ <div class="panel loginbox">
+  <div class="brand">SLAXY</div>
+  <p class="muted" style="text-align:center">Planlarını oluştur. Fikirlerini geliştir.</p>
+  <label>Admin kullanıcı adı</label>
+  <input id="username" placeholder="Kullanıcı adı" autocomplete="username">
+  <label>Admin şifresi</label>
+  <input id="password" type="password" placeholder="Şifre" autocomplete="current-password">
+  <button class="full" onclick="adminLogin()">Admin Girişi</button>
+  <button class="full secondary" onclick="guestLogin()">Misafir Girişi</button>
+  <p id="error" style="color:#ff8181;text-align:center"></p>
+  <p class="note">Bu HTML sürümünde giriş kontrolü tarayıcı içindedir. Gerçek güvenlik için sunucu gerekir.</p>
+ </div>
+</section>
+
+<main id="app" class="hidden">
+ <header class="panel">
+  <div><div class="brand" style="font-size:23px">SLAXY</div><span class="muted">Hayallerini planla</span></div>
+  <div><span id="role" class="badge">MİSAFİR</span><button class="secondary" onclick="logout()">Çıkış</button></div>
+ </header>
+
+ <nav>
+  <button class="active" onclick="tab('projects',this)">Projeler</button>
+  <button onclick="tab('commerce',this)">E-Ticaret · VIP</button>
+  <button onclick="tab('contact',this)">VIP / İletişim</button>
+ </nav>
+
+ <section id="projects" class="tab active">
+  <div class="panel">
+   <h2>Proje Hazırlama</h2>
+   <p class="muted">Proje oluştur, fikirlerini kaydet ve JPG olarak indir.</p>
+   <form id="projectForm" onsubmit="saveProject(event)">
+    <input type="hidden" id="pid">
+    <label>Proje adı *</label><input id="pname" required maxlength="120" placeholder="Projenin adı">
+    <label>Projenin hedefi</label><input id="pgoal" placeholder="Projenin amacı">
+    <label>Açıklama</label><textarea id="pdesc" placeholder="Proje fikrini açıkla"></textarea>
+    <label>Yapılacak işler</label><textarea id="psteps" placeholder="Adımları yaz"></textarea>
+    <label>Fotoğraf ekle</label><input id="pphotos" type="file" accept="image/*" multiple>
+    <button type="submit">Projeyi Kaydet</button>
+    <button type="button" class="secondary" onclick="resetProject()">Temizle</button>
+   </form>
+  </div>
+  <div class="panel">
+   <h3>Kaydedilen Projeler</h3>
+   <div id="projectList"></div>
+  </div>
+ </section>
+
+ <section id="commerce" class="tab">
+  <h2>E-Ticaret Merkezi</h2>
+  <div id="guestLock" class="locked">
+   <div class="lockicon">♙</div><span class="badge">VIP ERİŞİMİ</span>
+   <h3>Bu alan VIP içindir</h3>
+   <p class="muted">Misafirler bu bölümü görebilir ancak kullanamaz.</p>
+   <button class="vipbtn" onclick="contactVip()">VIP için iletişime geç</button>
+  </div>
+  <div id="commerceAdmin" class="hidden">
+   <div class="panel">
+    <h3>Ürün / Satış Planı</h3>
+    <form id="commerceForm" onsubmit="saveCommerce(event)">
+     <input type="hidden" id="cid">
+     <label>Ürün veya plan adı *</label><input id="cname" required>
+     <label>Tedarikçi</label><input id="supplier">
+     <label>Maliyet (TL)</label><input id="cost" type="number" min="0" step=".01">
+     <label>Satış fiyatı (TL)</label><input id="price" type="number" min="0" step=".01">
+     <label>Notlar / satış stratejisi</label><textarea id="cnotes"></textarea>
+     <label>Fotoğraf</label><input id="cphotos" type="file" accept="image/*" multiple>
+     <button type="submit">Kaydet</button>
+     <button type="button" class="secondary" onclick="resetCommerce()">Temizle</button>
+    </form>
+   </div>
+   <div class="panel"><h3>Ürünler ve Planlar</h3><div id="commerceList"></div></div>
+  </div>
+ </section>
+
+ <section id="contact" class="tab">
+  <div class="panel">
+   <span class="badge">SLAXY VIP</span>
+   <h2>VIP Erişimi</h2>
+   <p class="muted">VIP özellikleri için e-posta yoluyla iletişim kur.</p>
+   <p><strong>gncmicheal@gmail.com</strong></p>
+   <button class="vipbtn full" onclick="contactVip()">E-posta Gönder</button>
+  </div>
+  <div class="panel">
+   <h3>Veri Yedekleme</h3>
+   <p class="muted">Projelerini ve e-ticaret kayıtlarını JSON dosyası olarak indir.</p>
+   <button class="secondary full" onclick="backup()">JSON Yedeği İndir</button>
+   <div id="importArea" class="hidden">
+    <label>JSON yedeği geri yükle</label>
+    <input type="file" accept=".json,application/json" onchange="restoreBackup(event)">
+   </div>
+  </div>
+ </section>
+ <p class="note" style="text-align:center">SLAXY · HAYALLERİNİ PLANLA</p>
+</main>
+
+<script>
+const ADMIN_USER="BunuBizKurduk";
+const ADMIN_PASS="123456789Am";
+const KEY="slaxy_data_v1";
+let currentRole=null;
+let data={projects:[],commerce:[]};
+
+function load(){
+ try{
+  const d=JSON.parse(localStorage.getItem(KEY)||"{}");
+  data.projects=Array.isArray(d.projects)?d.projects:[];
+  data.commerce=Array.isArray(d.commerce)?d.commerce:[];
+ }catch(e){data={projects:[],commerce:[]}}
+}
+function persist(){
+ try{localStorage.setItem(KEY,JSON.stringify(data));return true}
+ catch(e){alert("Depolama alanı doldu. Daha küçük fotoğraflar dene.");return false}
+}
+function id(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7)}
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function adminLogin(){
+ if(username.value===ADMIN_USER&&password.value===ADMIN_PASS){enter("admin");error.textContent=""}
+ else error.textContent="Kullanıcı adı veya şifre yanlış.";
+}
+function guestLogin(){enter("guest")}
+function enter(role){
+ currentRole=role;login.classList.add("hidden");app.classList.remove("hidden");
+ document.getElementById("role").textContent=role==="admin"?"ADMIN":"MİSAFİR";
+ guestLock.classList.toggle("hidden",role==="admin");
+ commerceAdmin.classList.toggle("hidden",role!=="admin");
+ importArea.classList.toggle("hidden",role!=="admin");
+ renderProjects();renderCommerce();
+}
+function logout(){currentRole=null;app.classList.add("hidden");login.classList.remove("hidden");username.value="";password.value=""}
+function tab(id,button){
+ document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));
+ document.getElementById(id).classList.add("active");
+ document.querySelectorAll("nav button").forEach(x=>x.classList.remove("active"));
+ button.classList.add("active");
+}
+function contactVip(){
+ location.href="mailto:gncmicheal@gmail.com?subject="+encodeURIComponent("SLAXY VIP Erişim Talebi")+"&body="+encodeURIComponent("Merhaba, SLAXY VIP erişimi hakkında bilgi almak istiyorum.");
+}
+function photosFrom(input){
+ const files=Array.from(input.files||[]);
+ return Promise.all(files.map(f=>new Promise(resolve=>{
+  if(!f.type.startsWith("image/"))return resolve(null);
+  const r=new FileReader();r.onload=()=>resolve({name:f.name,data:r.result});r.onerror=()=>resolve(null);r.readAsDataURL(f);
+ }))).then(x=>x.filter(Boolean));
+}
+async function saveProject(e){
+ e.preventDefault();
+ const pid=document.getElementById("pid").value;
+ const old=data.projects.find(x=>x.id===pid);
+ const photos=await photosFrom(pphotos);
+ const p={id:pid||id(),name:pname.value.trim(),goal:pgoal.value.trim(),desc:pdesc.value.trim(),steps:psteps.value.trim(),photos:[...(old?.photos||[]),...photos],date:new Date().toISOString()};
+ if(pid)data.projects=data.projects.map(x=>x.id===pid?p:x);else data.projects.unshift(p);
+ if(persist()){resetProject();renderProjects()}
+}
+function resetProject(){projectForm.reset();pid.value=""}
+function editProject(key){
+ const p=data.projects.find(x=>x.id===key);if(!p)return;
+ pid.value=p.id;pname.value=p.name;pgoal.value=p.goal||"";pdesc.value=p.desc||"";psteps.value=p.steps||"";
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+function deleteProject(key){
+ if(currentRole!=="admin"){alert("Silme işlemini yalnızca admin yapabilir.");return}
+ if(!confirm("Bu projeyi silmek istiyor musun?"))return;
+ data.projects=data.projects.filter(x=>x.id!==key);persist();renderProjects();
+}
+function renderProjects(){
+ projectList.innerHTML=data.projects.length?data.projects.map(p=>`
+ <article class="item"><h3>${esc(p.name)}</h3>
+ ${p.goal?`<p><b>Hedef:</b> ${esc(p.goal)}</p>`:""}
+ ${p.desc?`<p>${esc(p.desc)}</p>`:""}
+ ${p.steps?`<p><b>Yapılacak işler:</b><br>${esc(p.steps)}</p>`:""}
+ ${(p.photos||[]).map(ph=>`<img src="${ph.data}" alt="${esc(ph.name)}">`).join("")}
+ <div class="actions"><button class="secondary" onclick="exportProject('${p.id}')">JPG İndir</button>
+ <button class="secondary" onclick="editProject('${p.id}')">Düzenle</button>
+ ${currentRole==="admin"?`<button class="danger" onclick="deleteProject('${p.id}')">Sil</button>`:""}</div></article>`).join(""):'<p class="muted">Henüz proje eklenmedi.</p>';
+}
+async function saveCommerce(e){
+ e.preventDefault();if(currentRole!=="admin")return;
+ const cid=document.getElementById("cid").value,old=data.commerce.find(x=>x.id===cid),photos=await photosFrom(cphotos);
+ const c={id:cid||id(),name:cname.value.trim(),supplier:supplier.value.trim(),cost:cost.value,price:price.value,notes:cnotes.value.trim(),photos:[...(old?.photos||[]),...photos]};
+ if(cid)data.commerce=data.commerce.map(x=>x.id===cid?c:x);else data.commerce.unshift(c);
+ if(persist()){resetCommerce();renderCommerce()}
+}
+function resetCommerce(){commerceForm.reset();cid.value=""}
+function editCommerce(key){
+ if(currentRole!=="admin")return;const c=data.commerce.find(x=>x.id===key);if(!c)return;
+ cid.value=c.id;cname.value=c.name;supplier.value=c.supplier||"";cost.value=c.cost||"";price.value=c.price||"";cnotes.value=c.notes||"";
+ document.querySelector('nav button:nth-child(2)').click();
+}
+function deleteCommerce(key){
+ if(currentRole!=="admin"||!confirm("Bu kaydı silmek istiyor musun?"))return;
+ data.commerce=data.commerce.filter(x=>x.id!==key);persist();renderCommerce();
+}
+function renderCommerce(){
+ commerceList.innerHTML=data.commerce.length?data.commerce.map(c=>`
+ <article class="item"><h3>${esc(c.name)}</h3>
+ <p>Tedarikçi: ${esc(c.supplier||"Belirtilmedi")}<br>Maliyet: ${esc(c.cost||"0")} TL<br>Satış: ${esc(c.price||"0")} TL<br>Fiyat farkı: ${(Number(c.price||0)-Number(c.cost||0)).toLocaleString("tr-TR")} TL</p>
+ ${c.notes?`<p>${esc(c.notes)}</p>`:""}
+ ${(c.photos||[]).map(ph=>`<img src="${ph.data}" alt="${esc(ph.name)}">`).join("")}
+ <div class="actions"><button class="secondary" onclick="exportCommerce('${c.id}')">JPG İndir</button><button class="secondary" onclick="editCommerce('${c.id}')">Düzenle</button><button class="danger" onclick="deleteCommerce('${c.id}')">Sil</button></div></article>`).join(""):'<p class="muted">Henüz kayıt yok.</p>';
+}
+function download(blob,name){
+ const url=URL.createObjectURL(blob),a=document.createElement("a");
+ a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
+}
+function backup(){download(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}),"slaxy-yedek.json")}
+function restoreBackup(e){
+ if(currentRole!=="admin")return;const f=e.target.files[0];if(!f)return;
+ const r=new FileReader();r.onload=()=>{
+ try{const d=JSON.parse(r.result);if(!Array.isArray(d.projects)||!Array.isArray(d.commerce))throw Error();data.projects=[...d.projects,...data.projects];data.commerce=[...d.commerce,...data.commerce];persist();renderProjects();renderCommerce();alert("Yedek eklendi.")}
+ catch(err){alert("Bu yedek dosyası geçerli değil.")}e.target.value="";
+ };r.readAsText(f);
+}
+function wrap(ctx,text,max){
+ const lines=[];String(text||"").split("\n").forEach(para=>{
+  if(!para){lines.push("");return}let line="";
+  para.split(/\s+/).forEach(word=>{const test=line?line+" "+word:word;if(ctx.measureText(test).width>max&&line){lines.push(line);line=word}else line=test});
+  lines.push(line);
+ });return lines;
+}
+async function makeJpg(title,fields,photos,filename){
+ const canvas=document.createElement("canvas"),W=1200,H=1600,m=80;
+ canvas.width=W;canvas.height=H;const c=canvas.getContext("2d");
+ const g=c.createLinearGradient(0,0,W,H);g.addColorStop(0,"#17294a");g.addColorStop(1,"#080d18");c.fillStyle=g;c.fillRect(0,0,W,H);
+ c.fillStyle="#76a9ff";c.font="bold 34px Arial";c.fillText("SLAXY",m,65);
+ c.fillStyle="white";c.font="bold 45px Arial";
+ let y=135;wrap(c,title,W-2*m).slice(0,2).forEach(t=>{c.fillText(t,m,y);y+=55});
+ c.fillStyle="#76a9ff";c.fillRect(m,y+4,120,5);y+=48;
+ c.font="bold 25px Arial";c.fillStyle="#76a9ff";
+ const maxY=photos.length?H-470:H-100;
+ for(const [label,value] of fields){
+  if(!value)continue;
+  if(y>maxY)break;c.font="bold 25px Arial";c.fillStyle="#76a9ff";
+  for(const line of wrap(c,label,W-2*m)){if(y>maxY)break;c.fillText(line,m,y);y+=33}
+  c.font="24px Arial";c.fillStyle="#eef2fb";
+  for(const line of wrap(c,String(value),W-2*m)){if(y>maxY)break;c.fillText(line,m,y);y+=38}
+  y+=15;
+ }
+ if(photos.length){
+  const top=H-420;c.fillStyle="#263653";c.fillRect(m,top,W-2*m,2);
+  c.fillStyle="#a7b4cc";c.font="bold 21px Arial";c.fillText("FOTOĞRAFLAR",m,top+32);
+  let x=m;
+  for(const ph of photos.slice(0,2)){
+   const img=await new Promise(resolve=>{const i=new Image();i.onload=()=>resolve(i);i.onerror=()=>resolve(null);i.src=ph.data});
+   if(!img)continue;
+   const bw=(W-2*m-20)/2,bh=320,s=Math.min(bw/img.width,bh/img.height);
+   c.drawImage(img,x+(bw-img.width*s)/2,top+48+(bh-img.height*s)/2,img.width*s,img.height*s);x+=bw+20;
+  }
+ }
+ c.fillStyle="#8492ad";c.font="18px Arial";c.fillText("SLAXY · HAYALLERİNİ PLANLA",m,H-30);
+ canvas.toBlob(b=>{if(b)download(b,filename+".jpg");else alert("JPG oluşturulamadı.")},"image/jpeg",.92);
+}
+function exportProject(key){
+ const p=data.projects.find(x=>x.id===key);if(!p)return;
+ makeJpg(p.name,[["Hedef",p.goal],["Açıklama",p.desc],["Yapılacak işler",p.steps]],p.photos||[],"slaxy-proje");
+}
+function exportCommerce(key){
+ if(currentRole!=="admin")return;const c=data.commerce.find(x=>x.id===key);if(!c)return;
+ makeJpg(c.name,[["Tedarikçi",c.supplier],["Maliyet",c.cost+" TL"],["Satış fiyatı",c.price+" TL"],["Notlar",c.notes]],c.photos||[],"slaxy-eticaret");
+}
+load();
+setTimeout(()=>{intro.classList.add("hidden");login.classList.remove("hidden")},3000);
+</script>
+</body>
+</html>
